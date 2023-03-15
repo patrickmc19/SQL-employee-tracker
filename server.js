@@ -1,22 +1,19 @@
 const mysql = require('mysql2');
-const express = require('express');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const fs = require('fs');
-
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+require("dotenv").config();
 
 const connection = mysql.createConnection(
   {
     host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'employee_db'
-  }).promise();
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+
+connection.connect(() => {
+  start();
+});
 
 const start = () => {
   inquirer.prompt({
@@ -42,7 +39,7 @@ const start = () => {
     ],
   })
     .then((answer) => {
-      switch (answer.menu) {
+      switch (answer.directory) {
         case 'View all departments':
           viewDepartments();
           break;
@@ -95,6 +92,111 @@ const start = () => {
     });
 };
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const viewDepartments = () => {
+  connection.query('SELECT * FROM department', (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
+
+const viewRoles = () => {
+  connection.query('SELECT * FROM role', (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
+
+const viewEmployees = () => {
+  connection.query('SELECT * FROM employee', (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
+
+const addDepartment = () => {
+  inquirer.prompt([
+    {
+      name: 'name',
+      type: 'input',
+      message: 'What is the new department name?'
+    }
+  ])
+    .then((answer) => {
+      connection.query('INSERT INTO department SET ?', { dept_name: answer.name }, (err) => {
+        if (err) throw err;
+        console.log('New department was added!');
+        start();
+      });
+    });
+};
+
+const addRole = () => {
+  connection.query("SELECT id AS value, dept_name AS name FROM department", (err, data) => {
+    inquirer.prompt([
+      {
+        name: 'name',
+        type: 'input',
+        message: 'What is the name of the new role?'
+      },
+      {
+        name: 'salary',
+        type: 'input',
+        message: 'What is the salary for this role?'
+      },
+      {
+        name: 'dept_id',
+        type: 'list',
+        message: 'What is the department id?',
+        choices: data,
+      }
+    ])
+      .then((answer) => {
+        connection.query('INSERT INTO role SET ?', { title: answer.name, salary: answer.salary, department_id: answer.dept_id }, (err) => {
+          if (err) throw err;
+          console.log("New role was added!");
+          start();
+        })
+      })
+  })
+};
+
+const addEmployee = () => {
+  connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, data) => {
+    connection.query("SELECT id AS value, title AS name FROM role", (err, roleData) => {
+      inquirer.prompt([
+        {
+          name: 'first_name',
+          type: 'input',
+          message: 'What is the first name of the employee?',
+        },
+        {
+          name: 'last_name',
+          type: 'input',
+          message: 'What is the last name of the employee?',
+        },
+        {
+          name: 'role_id',
+          type: 'list',
+          message: 'What is the employees role ID?',
+          choices: roleData,
+        },
+        {
+          name: 'manager_id',
+          type: 'list',
+          message: 'Does the employee have a manager?',
+          choices: data,
+        }
+      ])
+        .then((answer) => {
+          connection.query('INSERT INTO employee SET ?', { first_name: answer.first_name, last_name: answer.last_name, role_id: answer.role_id, manager_id: answer.manager_id }, (err) => {
+            if (err) throw err;
+            console.log('New employee was added!');
+            start();
+          })
+        })
+    })
+  })
+};
