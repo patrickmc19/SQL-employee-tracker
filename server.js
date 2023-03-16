@@ -164,39 +164,95 @@ const addRole = () => {
 };
 
 const addEmployee = () => {
-  connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, data) => {
+  connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, employeeData) => {
     connection.query("SELECT id AS value, title AS name FROM role", (err, roleData) => {
       inquirer.prompt([
         {
-          name: 'first_name',
+          name: 'first',
           type: 'input',
           message: 'What is the first name of the employee?',
         },
         {
-          name: 'last_name',
+          name: 'last',
           type: 'input',
           message: 'What is the last name of the employee?',
         },
         {
-          name: 'role_id',
+          name: 'role',
           type: 'list',
-          message: 'What is the employees role ID?',
+          message: 'What is their role?',
           choices: roleData,
         },
         {
-          name: 'manager_id',
+          name: 'manager',
           type: 'list',
           message: 'Does the employee have a manager?',
-          choices: data,
+          choices: employeeData,
         }
       ])
         .then((answer) => {
-          connection.query('INSERT INTO employee SET ?', { first_name: answer.first_name, last_name: answer.last_name, role_id: answer.role_id, manager_id: answer.manager_id }, (err) => {
+          connection.query('INSERT INTO employee SET ?', { first_name: answer.first, last_name: answer.last, role_id: answer.role, manager_id: answer.manager }, (err) => {
             if (err) throw err;
             console.log('New employee was added!');
             start();
           })
         })
+    })
+  })
+};
+
+const updateRole = () => {
+  connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, employeeData) => {
+    connection.query("SELECT id AS value, title AS name FROM role", (err, roleData) => {
+      inquirer.prompt([
+        {
+          name: "employee",
+          type: "list",
+          message: "Select an employee...",
+          choices: employeeData,
+        },
+        {
+          name: "role",
+          type: "list",
+          message: "What is their new role?",
+          choices: roleData,
+        },
+      ])
+      .then((answer) => {
+        connection.query("UPDATE employee SET role_id = ? WHERE id = ?", { role_id: answer.role, id: answer.employee }, (err) => {
+          if (err) throw err;
+          console.log('Employee role updated!');
+          start();
+        })
+      })
+    })
+  })
+};
+
+const updateManager = () => {
+  connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, employeeData) => {
+    connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, managerData) => {
+      inquirer.prompt([
+        {
+          name: "employee",
+          type: "list",
+          message: "Select an employee to update their manager...",
+          choices: employeeData,
+        },
+        {
+          name: "manager",
+          type: "list",
+          message: "Select the employees new manager...",
+          choices: managerData,
+        },
+      ])
+      .then((answer) => {
+        connection.query("UPDATE employee SET manager_id = ? WHERE id = ?", { manager_id: answer.manager, id: answer.employee }, (err) => {
+          if (err) throw err;
+          console.log("Employee manager updated!");
+          start();
+        })
+      })
     })
   })
 };
