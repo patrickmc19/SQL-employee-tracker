@@ -190,13 +190,13 @@ const updateRole = () => {
           choices: roleData,
         },
       ])
-      .then((answer) => {
-        connection.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [answer.role, answer.employee], (err) => {
-          if (err) throw err;
-          console.log('Employee role updated!');
-          start();
+        .then((answer) => {
+          connection.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [answer.role, answer.employee], (err) => {
+            if (err) throw err;
+            console.log('Employee role updated!');
+            start();
+          })
         })
-      })
     })
   })
 };
