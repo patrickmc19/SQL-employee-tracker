@@ -36,7 +36,7 @@ THEN I am prompted to select an employee to update and their new role and this i
 
 ## Video Tutorial
 
-
+[MySQL Employee Tracker.webm](https://user-images.githubusercontent.com/119803685/225789758-32bdc200-cf9b-47f3-9f32-24f1c036866d.webm)
 
 ## What was my motivation?
 
