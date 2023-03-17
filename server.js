@@ -28,13 +28,6 @@ const start = () => {
       'Add a role',
       'Add an employee',
       'Update employee role',
-      'Update employee manager',
-      'View employees by manager',
-      'View employees by department',
-      'Delete department',
-      'Delete role',
-      'Delete employee',
-      'View total utilized budget by department',
       'Exit',
     ],
   })
@@ -60,27 +53,6 @@ const start = () => {
           break;
         case 'Update employee role':
           updateRole();
-          break;
-        case 'Update employee manager':
-          updateManager();
-          break;
-        case 'View employees by manager':
-          employeesByManager();
-          break;
-        case 'View employees by department':
-          employeesByDepartment();
-          break;
-        case 'Delete department':
-          deleteDepartment();
-          break;
-        case 'Delete role':
-          deleteRole();
-          break;
-        case 'Delete employee':
-          deleteEmployee();
-          break;
-        case 'View total utilized budget by department':
-          departmentBudget();
           break;
         case 'Exit':
           connection.end();
@@ -219,37 +191,9 @@ const updateRole = () => {
         },
       ])
       .then((answer) => {
-        connection.query("UPDATE employee SET role_id = ? WHERE id = ?", { role_id: answer.role, id: answer.employee }, (err) => {
+        connection.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [answer.role, answer.employee], (err) => {
           if (err) throw err;
           console.log('Employee role updated!');
-          start();
-        })
-      })
-    })
-  })
-};
-
-const updateManager = () => {
-  connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, employeeData) => {
-    connection.query("SELECT id AS value, concat(first_name,' ',last_name) AS name FROM employee", (err, managerData) => {
-      inquirer.prompt([
-        {
-          name: "employee",
-          type: "list",
-          message: "Select an employee to update their manager...",
-          choices: employeeData,
-        },
-        {
-          name: "manager",
-          type: "list",
-          message: "Select the employees new manager...",
-          choices: managerData,
-        },
-      ])
-      .then((answer) => {
-        connection.query("UPDATE employee SET manager_id = ? WHERE id = ?", { manager_id: answer.manager, id: answer.employee }, (err) => {
-          if (err) throw err;
-          console.log("Employee manager updated!");
           start();
         })
       })
